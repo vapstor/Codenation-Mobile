@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Codenation</string>
+    <string name="criptografia_de_c_sar">Criptografia de César</string>
+    <string name="codenation">Codenation</string>
+    <string name="aguardando">Aguardando…</string>
+    <string name="sha1">RESOLVER</string>
+    <string name="post">POST</string>
+</resources>
