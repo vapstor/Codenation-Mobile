@@ -318,25 +318,6 @@ public class MainActivity extends AppCompatActivity {
 
     private File read() {
         return new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)+"/answer.json");
-////        File ret = null;
-////        try {
-////            InputStream inputStream = new FileInputStream(new File(getFilesDir()+"answer"));
-////            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-////            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-////            String receiveString = "";
-////            StringBuilder stringBuilder = new StringBuilder();
-////            while ( (receiveString = bufferedReader.readLine()) != null ) {
-////                stringBuilder.append(receiveString);
-////            }
-////            inputStream.close();
-////            ret = new File(stringBuilder.toString());
-//        }
-//        catch (FileNotFoundException e) {
-//            Log.e("FileToJson", "File not found: " + e.toString());
-//        } catch (IOException e) {
-//            Log.e("FileToJson", "Can not read file: " + e.toString());
-//        }
-//        return ret;
     }
 
     public boolean isFilePresent(String fileName) {
@@ -362,7 +343,6 @@ public class MainActivity extends AppCompatActivity {
             RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
                 .addFormDataPart("answer", name,
                         RequestBody.create(file, MediaType.parse("multipart/form-data")))
-//                .addFormDataPart("some-field", "some-value")
                 .build();
 
             Request request = new Request.Builder()
