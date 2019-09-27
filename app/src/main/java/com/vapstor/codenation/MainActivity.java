@@ -372,7 +372,6 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
             Response response = client.newCall(request).execute();
-            String retornoAPI;
             return response.code();
         } catch (Exception ex) {
             ex.printStackTrace();
