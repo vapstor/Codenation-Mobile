@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -141,9 +142,7 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
 
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
@@ -169,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void postChallenge(View v) {
-        boolean isFilePresent = isFilePresent("answer");
+        boolean isFilePresent = isFilePresent("/answer.json");
         if(isFilePresent) {
             new Thread(() -> {
                 switch(uploadFile(read())){
@@ -207,83 +206,83 @@ public class MainActivity extends AppCompatActivity {
                 case ' ':
                     myChar = ' ';
                     break;
-                case 'v':
-                    myChar = 'z';
-                    break;
-                case 'w':
-                    myChar = 'a';
-                    break;
-                case 'x':
-                    myChar = 'b';
-                    break;
-                case 'y':
-                    myChar = 'c';
-                    break;
                 case 'z':
-                    myChar = 'd';
-                    break;
-                case 'a':
-                    myChar = 'e';
-                    break;
-                case 'b':
-                    myChar = 'f';
-                    break;
-                case 'c':
-                    myChar = 'g';
-                    break;
-                case 'd':
-                    myChar = 'h';
-                    break;
-                case 'e':
-                    myChar = 'i';
-                    break;
-                case 'f':
-                    myChar = 'j';
-                    break;
-                case 'g':
-                    myChar = 'k';
-                    break;
-                case 'h':
-                    myChar = 'l';
-                    break;
-                case 'i':
-                    myChar = 'm';
-                    break;
-                case 'j':
-                    myChar = 'n';
-                    break;
-                case 'k':
-                    myChar = 'o';
-                    break;
-                case 'l':
-                    myChar = 'p';
-                    break;
-                case 'm':
-                    myChar = 'q';
-                    break;
-                case 'n':
-                    myChar = 'r';
-                    break;
-                case 'o':
-                    myChar = 's';
-                    break;
-                case 'p':
-                    myChar = 't';
-                    break;
-                case 'q':
-                    myChar = 'u';
-                    break;
-                case 'r':
                     myChar = 'v';
                     break;
-                case 's':
+                case 'a':
                     myChar = 'w';
                     break;
-                case 't':
+                case 'b':
                     myChar = 'x';
                     break;
-                case 'u':
+                case 'c':
                     myChar = 'y';
+                    break;
+                case 'd':
+                    myChar = 'z';
+                    break;
+                case 'e':
+                    myChar = 'a';
+                    break;
+                case 'f':
+                    myChar = 'b';
+                    break;
+                case 'g':
+                    myChar = 'c';
+                    break;
+                case 'h':
+                    myChar = 'd';
+                    break;
+                case 'i':
+                    myChar = 'e';
+                    break;
+                case 'j':
+                    myChar = 'f';
+                    break;
+                case 'k':
+                    myChar = 'g';
+                    break;
+                case 'l':
+                    myChar = 'h';
+                    break;
+                case 'm':
+                    myChar = 'i';
+                    break;
+                case 'n':
+                    myChar = 'j';
+                    break;
+                case 'o':
+                    myChar = 'k';
+                    break;
+                case 'p':
+                    myChar = 'l';
+                    break;
+                case 'q':
+                    myChar = 'm';
+                    break;
+                case 'r':
+                    myChar = 'n';
+                    break;
+                case 's':
+                    myChar = 'o';
+                    break;
+                case 't':
+                    myChar = 'p';
+                    break;
+                case 'u':
+                    myChar = 'q';
+                    break;
+                case 'v':
+                    myChar = 'r';
+                    break;
+                case 'w':
+                    myChar = 's';
+                    break;
+                case 'x':
+                    myChar = 't';
+                    break;
+                case 'y':
+                    myChar = 'u';
                     break;
                 default:
                     myChar = '?';
@@ -296,19 +295,19 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean saveJSON(String jsonString) {
         try{
-            BufferedWriter file = new BufferedWriter(new FileWriter(getFilesDir() +"/answer.json"));
+            BufferedWriter file = new BufferedWriter(new FileWriter(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) +"/answer.json"));
             file.write(jsonString);
+            file.flush();
+            file.close();
             return true;
-        } catch (FileNotFoundException fileNotFound) {
-            return false;
-        } catch (IOException ioException) {
+        } catch (IOException fileNotFound) {
             return false;
         }
     }
 
     private boolean refreshJSON(JSONObject challenge){
         //Copiar dados para JSON
-        try (BufferedWriter file = new BufferedWriter(new FileWriter(getFilesDir() +"/answer.json"))) {
+        try (BufferedWriter file = new BufferedWriter(new FileWriter(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) +"/answer.json"))) {
             file.write(challenge.toString());
             return true;
         } catch (IOException e) {
@@ -318,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private File read() {
-        return new File(getFilesDir()+"/answer.json");
+        return new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)+"/answer.json");
 ////        File ret = null;
 ////        try {
 ////            InputStream inputStream = new FileInputStream(new File(getFilesDir()+"answer"));
@@ -341,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean isFilePresent(String fileName) {
-        String path = getFilesDir() + fileName;
+        String path = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) + fileName;
         File file = new File(path);
         return file.exists();
     }
