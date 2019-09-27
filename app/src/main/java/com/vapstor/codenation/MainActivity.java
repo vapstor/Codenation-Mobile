@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         resumoCriptografico = findViewById(R.id.resumo_criptografico);
                         try {
                             challenge = new JSONObject(jsonString[0]);
-                            numeroCasas.setText("NUMERO DE CASAS: "+String.valueOf(challenge.getInt("numero_casas")));
+                            numeroCasas.setText("NUMERO DE CASAS: "+ challenge.getInt("numero_casas"));
                             token.setText("TOKEN: "+challenge.getString("token"));
                             cifrado.setText("CIFRADO: "+challenge.getString("cifrado"));
 //                            decifrado.setText("DECIFRADO: "+challenge.getString("decifrado"));
@@ -169,16 +169,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void postChallenge(View v) {
-        boolean isFilePresent = isFilePresent("answer.json");
+        boolean isFilePresent = isFilePresent("answer");
         if(isFilePresent) {
             new Thread(() -> {
-                if(uploadFile(read())) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "ARQUIVO POSTADO COM SUCESSO!!!", Toast.LENGTH_SHORT).show();
-                        finish();
-                        startActivity(getIntent());
-                    });
+                switch(uploadFile(read())){
+                    case 200:
+                        runOnUiThread(() -> Toast.makeText(this, "JSON POSTADO COM SUCESSO! (200)", Toast.LENGTH_LONG).show());
+                        break;
+                    case 400:
+                        runOnUiThread(() -> Toast.makeText(this, "BAD RESQUEST! (400)", Toast.LENGTH_LONG).show());
+                        break;
+                    case 429:
+                        runOnUiThread(() -> Toast.makeText(this, "TOO MANY RESQUESTS! (429)", Toast.LENGTH_LONG).show());
+                        break;
+                    case 0:
+                    default:
+                        runOnUiThread(() -> Toast.makeText(this, "UNKNOW ERROR! (0)", Toast.LENGTH_LONG).show());
+                        break;
                 }
+                finish();
+                startActivity(getIntent());
             }).start();
         } else {
             Toast.makeText(this, "JSON NÃO ENCONTRADO!", Toast.LENGTH_SHORT).show();
@@ -285,12 +295,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean saveJSON(String jsonString) {
-        try {
-            FileOutputStream fos = openFileOutput("answer.json", Context.MODE_PRIVATE);
-            if (jsonString != null) {
-                fos.write(jsonString.getBytes());
-            }
-            fos.close();
+        try{
+            BufferedWriter file = new BufferedWriter(new FileWriter(getFilesDir() +"/answer.json"));
+            file.write(jsonString);
             return true;
         } catch (FileNotFoundException fileNotFound) {
             return false;
@@ -301,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean refreshJSON(JSONObject challenge){
         //Copiar dados para JSON
-        try (BufferedWriter file = new BufferedWriter(new FileWriter(getFilesDir() + "answer.json"))) {
+        try (BufferedWriter file = new BufferedWriter(new FileWriter(getFilesDir() +"/answer.json"))) {
             file.write(challenge.toString());
             return true;
         } catch (IOException e) {
@@ -311,19 +318,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private File read() {
-        return new File(getFilesDir()+"answer.json");
-//        File ret;
-//        try {
-//            InputStream inputStream = new FileInputStream(new File(getFilesDir()+"answer.json"));
-//            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-//            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//            String receiveString = "";
-//            StringBuilder stringBuilder = new StringBuilder();
-//            while ( (receiveString = bufferedReader.readLine()) != null ) {
-//                stringBuilder.append(receiveString);
-//            }
-//            inputStream.close();
-//            ret = new File(stringBuilder.toString());
+        return new File(getFilesDir()+"/answer.json");
+////        File ret = null;
+////        try {
+////            InputStream inputStream = new FileInputStream(new File(getFilesDir()+"answer"));
+////            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+////            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+////            String receiveString = "";
+////            StringBuilder stringBuilder = new StringBuilder();
+////            while ( (receiveString = bufferedReader.readLine()) != null ) {
+////                stringBuilder.append(receiveString);
+////            }
+////            inputStream.close();
+////            ret = new File(stringBuilder.toString());
 //        }
 //        catch (FileNotFoundException e) {
 //            Log.e("FileToJson", "File not found: " + e.toString());
@@ -350,11 +357,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private Boolean uploadFile(File file) {
+    private int uploadFile(File file) {
         try {
+            String name = file.getName();
             RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("answer.json", file.getName(),
-                    RequestBody.create(MediaType.parse("multipart/form-data"), file))
+                .addFormDataPart("answer", name,
+                        RequestBody.create(file, MediaType.parse("multipart/form-data")))
 //                .addFormDataPart("some-field", "some-value")
                 .build();
 
@@ -363,39 +371,15 @@ public class MainActivity extends AppCompatActivity {
                 .post(requestBody)
                 .build();
 
-            client.newCall(request).enqueue(new Callback() {
-
-                @Override
-                public void onFailure(final Call call, final IOException e) {
-                    // Handle the error
-                }
-
-                @Override
-                public void onResponse(final Call call, final Response response) throws IOException {
-                    if (!response.isSuccessful()) {
-                        // Handle the error
-                    }
-                    // Upload successful
-                }
-            });
-
-            return true;
+            Response response = client.newCall(request).execute();
+            String retornoAPI;
+            return response.code();
         } catch (Exception ex) {
-            // Handle the error
+            ex.printStackTrace();
         }
-        return false;
+        return 0;
     }
 
-    public String post(String url, File json) throws IOException {
-        RequestBody body = RequestBody.create(FORM, json);
-        Request request = new Request.Builder()
-            .url(url)
-            .post(body)
-            .build();
-        Response response = client.newCall(request).execute();
-        String a = Objects.requireNonNull(response.body()).string();
-        return a;
-    }
     public String run(String url) throws IOException {
         Request request = new Request.Builder()
             .url(url)
